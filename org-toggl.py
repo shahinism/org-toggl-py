@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import os
 import sys
 import json
@@ -44,6 +45,27 @@ def setup_config(config_obj, config_path):
         days = 30
     config_obj.set('org-toggl-py', 'skip_clocks_older_than_days', str(days))
     return None
+
+
+def sanitize_headlines(headlines):
+    headlines = ' | '.join(headlines)
+    skip_types = {
+        '[ ]': '',
+        '[X]': '',
+        '[-]': '',
+        '[?]': '',
+        'TODO': '',
+        'DONE': '',
+        'NEXT': '',
+        'ACTIVE': '',
+        'WAITING': '',
+        'CANCELLED': '',
+    }
+
+    for typ, rep in skip_types.items():
+        headlines = headlines.replace(typ, rep)
+
+    return headlines.strip()
 
 
 class OrgNode(object):
@@ -186,7 +208,7 @@ class OrgNode(object):
                 raw_value=date.properties['raw-value'],
                 pid=toggl_pid,
                 tid=toggl_tid,
-                description=' << '.join(headlines),
+                description=sanitize_headlines(headlines),
                 start_datetime=start_datetime,
                 end_datetime=end_datetime,
             )
